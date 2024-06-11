@@ -1,20 +1,15 @@
-use std::{thread::sleep, time::Duration};
-
 use static_assertions::const_assert_eq;
+use std::{thread::sleep, time::Duration};
 use sysinfo::{Pid, System};
-
 use windows::{
     core::{Error, Interface},
     Win32::{
         Foundation::{S_FALSE, S_OK},
         Media::Audio::{
-            eConsole, eRender, IAudioSessionControl2, IAudioSessionManager2, 
-            IMMDeviceEnumerator, ISimpleAudioVolume, MMDeviceEnumerator,
+            eConsole, eRender, IAudioSessionControl2, IAudioSessionManager2, IMMDeviceEnumerator,
+            ISimpleAudioVolume, MMDeviceEnumerator,
         },
-        System::Com::{
-            CoCreateInstance, CoInitializeEx, CLSCTX_ALL,
-            COINIT_APARTMENTTHREADED, 
-        },
+        System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_APARTMENTTHREADED},
     },
 };
 
@@ -41,7 +36,7 @@ fn main() -> Result<(), Error> {
             .GetDefaultAudioEndpoint(eRender, eConsole)
             .unwrap();
         let name_string = get_device_name(&default_device)?;
-        println!("Default device: {:?}", name_string);
+        println!("Default device: {name_string:?}");
 
         let session_manager = default_device.Activate::<IAudioSessionManager2>(CLSCTX_ALL, None)?;
         let mut system = System::new_all();

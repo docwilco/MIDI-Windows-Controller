@@ -18,6 +18,11 @@ static FRIENDLY_NAME: PROPERTYKEY = PROPERTYKEY {
     pid: Properties::DEVPKEY_Device_FriendlyName.pid,
 };
 
+#[allow(overflowing_literals)]
+pub static ELEMENT_NOT_FOUND: i32 = 0x8002_802B_i32;
+#[allow(overflowing_literals)]
+pub static BAD_VALUE: i32 = 0x8000_1054_i32;
+
 pub fn get_device_name(device: &IMMDevice) -> Result<String> {
     unsafe {
         let property_store = device.OpenPropertyStore(STGM_READ)?;
@@ -28,14 +33,18 @@ pub fn get_device_name(device: &IMMDevice) -> Result<String> {
         let prop_variant_inner = &name_prop_variant.as_raw().Anonymous.Anonymous;
         if prop_variant_inner.vt == VT_EMPTY.0 {
             return Err(windows::core::Error::new(
-                HRESULT(0x8002_802B_u32 as i32),
+                HRESULT(ELEMENT_NOT_FOUND),
                 "Empty property",
             ));
         }
-        assert_eq!(prop_variant_inner.vt, VT_LPWSTR.0);
-
-        let name_ptr = ptr::addr_of!(prop_variant_inner.Anonymous);
-        let name = PWSTR(name_ptr as *mut _);
+        if prop_variant_inner.vt != VT_LPWSTR.0 {
+            return Err(windows::core::Error::new(
+                HRESULT(BAD_VALUE),
+                "Unexpected property type",
+            ));
+        }
+        let inner = prop_variant_inner.Anonymous.pwszVal;
+        let name = PWSTR(inner);
         let name_string = name.to_string()?;
 
         StructuredStorage::PropVariantClear(&mut name_prop_variant)?;

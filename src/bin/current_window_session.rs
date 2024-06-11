@@ -1,62 +1,23 @@
-use std::{
-    collections::HashSet, ffi::OsString, os::windows::ffi::OsStringExt, slice, thread::sleep,
-    time::Duration,
-};
-
 use static_assertions::const_assert_eq;
+use std::{collections::HashSet, ptr, thread::sleep, time::Duration};
 use sysinfo::{Pid, System};
-
 use windows::{
     core::{Error, Interface},
     Win32::{
-        Devices::Properties,
         Foundation::TRUE,
         Media::Audio::{
             eConsole, eRender, Endpoints::IAudioEndpointVolume, IAudioSessionControl,
-            IAudioSessionControl2, IAudioSessionEnumerator, IAudioSessionManager2, IMMDevice,
+            IAudioSessionControl2, IAudioSessionEnumerator, IAudioSessionManager2,
             IMMDeviceEnumerator, ISimpleAudioVolume, MMDeviceEnumerator,
         },
-        System::Com::{
-            CoCreateInstance, CoInitializeEx, StructuredStorage, CLSCTX_ALL,
-            COINIT_APARTMENTTHREADED, STGM_READ,
-        },
+        System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_APARTMENTTHREADED},
+        UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId},
     },
 };
 
-use windows::Win32::{
-    System::Variant::VT_LPWSTR,
-    UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId},
-};
-
-fn get_device_name(device: &IMMDevice) -> Result<String, Error> {
-    unsafe {
-        let property_store = device.OpenPropertyStore(STGM_READ).unwrap();
-        let mut name_prop_variant = property_store
-            .GetValue(&Properties::DEVPKEY_Device_FriendlyName as *const _ as *const _)
-            .unwrap();
-        let prop_variant_inner = &name_prop_variant.as_raw().Anonymous.Anonymous;
-        assert_eq!(prop_variant_inner.vt, VT_LPWSTR.0);
-        let ptr_utf16 = *(&prop_variant_inner.Anonymous as *const _ as *const *const u16);
-
-        // Find the length of the friendly name.
-        let mut len = 0;
-        while *ptr_utf16.offset(len) != 0 {
-            len += 1;
-        }
-
-        // Create the utf16 slice and convert it into a string.
-        let name_slice = slice::from_raw_parts(ptr_utf16, len as usize);
-        let name_os_string: OsString = OsStringExt::from_wide(name_slice);
-        let name_string = match name_os_string.into_string() {
-            Ok(string) => string,
-            Err(os_string) => os_string.to_string_lossy().into(),
-        };
-
-        // Clean up the property.
-        StructuredStorage::PropVariantClear(&mut name_prop_variant).ok();
-        Ok(name_string)
-    }
-}
+#[path = "../utils.rs"]
+mod utils;
+use utils::get_device_name;
 
 fn main() -> Result<(), Error> {
     const_assert_eq!('{'.len_utf16(), 1);
@@ -95,7 +56,7 @@ fn main() -> Result<(), Error> {
             let session_collection = session_manager2.GetSessionEnumerator()?;
             let foreground = GetForegroundWindow();
             let mut window_pid: u32 = 0;
-            let _ = GetWindowThreadProcessId(foreground, Some(&mut window_pid as *mut _));
+            let _ = GetWindowThreadProcessId(foreground, Some(ptr::addr_of_mut!(window_pid)));
             system.refresh_processes();
             let session_pids = session_pids(&session_collection)?;
             let process = system.process(Pid::from_u32(window_pid));
@@ -143,8 +104,7 @@ fn session_pids(session_collection: &IAudioSessionEnumerator) -> Result<HashSet<
         .map(|i| unsafe { session_collection.GetSession(i) })
         .filter_map(|session| {
             session.ok().and_then(|session| {
-                let session_ext: IAudioSessionControl2 =
-                    session.cast::<IAudioSessionControl2>().ok()?;
+                let session_ext = session.cast::<IAudioSessionControl2>().ok()?;
                 let pid = unsafe { session_ext.GetProcessId() }.ok()?;
                 Some(Pid::from_u32(pid))
             })

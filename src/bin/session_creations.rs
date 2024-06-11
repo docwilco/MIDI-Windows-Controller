@@ -1,7 +1,5 @@
 // Register an IAudioSessionNotification on every device and print the session creation events.
-
 use std::rc::Rc;
-
 use windows::{
     core::{implement, Result},
     Win32::{
@@ -78,7 +76,7 @@ fn main() -> Result<()> {
             let session = unsafe { session_collection.GetSession(j) }?;
             let display_name = unsafe { session.GetDisplayName() }?;
             let display_name = unsafe { display_name.to_string() }?;
-            println!("Session: {}", display_name);
+            println!("Session: {display_name}");
         }
         session_managers.push(audio_session_manager);
         println!("Registered");

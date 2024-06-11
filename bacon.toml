@@ -20,6 +20,14 @@ command = [
     "cargo", "clippy",
     "--all-targets",
     "--color", "always",
+]
+need_stdout = false
+
+[jobs.pedantic]
+command = [
+    "cargo", "clippy",
+    "--all-targets",
+    "--color", "always",
     "--", "-D", "clippy::pedantic"
 ]
 need_stdout = false
@@ -61,3 +69,4 @@ allow_warnings = true
 # should go in your personal global prefs.toml file instead.
 [keybindings]
 # alt-m = "job:my-job"
+p = "job:pedantic"

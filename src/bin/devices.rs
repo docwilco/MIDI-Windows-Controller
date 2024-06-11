@@ -1,5 +1,4 @@
 use sysinfo::{Pid, System};
-
 use windows::{
     core::{Error, Interface},
     Win32::{
@@ -67,7 +66,7 @@ fn main() -> Result<(), Error> {
                 grouping_param,
                 icon_path.to_string()?
             );
-            println!("  {:?} {:?}", pid, is_system_sounds_session);
+            println!("  {pid:?} {is_system_sounds_session:?}");
             println!("  {:?}", session_id.to_string()?);
             if let Some(process) = system.process(Pid::from_u32(pid)) {
                 println!("  {:?}", process.name());
