@@ -1,7 +1,6 @@
 #![allow(non_upper_case_globals)]
 use std::{
     collections::{HashMap, HashSet},
-    ptr,
     rc::Rc,
     sync::{
         mpsc::{self, Sender},
@@ -257,6 +256,16 @@ impl SessionInfo {
                 .map(|process| process.name().to_string())
         };
         Ok(())
+    }
+}
+
+impl Drop for SessionInfo {
+    fn drop(&mut self) {
+        unsafe {
+            self.control
+                .UnregisterAudioSessionNotification(&self.session_events)
+        }
+        .unwrap();
     }
 }
 
@@ -655,7 +664,7 @@ fn main() -> Result<()> {
                 if let Some(proc) = process {
                     println!("Active Window: {}", proc.name());
                 }
-                let sessions = find_sessions_for_pid(pid, &device_map, &system)?;
+                let sessions = find_sessions_for_pid(pid, &device_map, &system);
                 for (device_id, session_instance_id) in sessions {
                     let device_map_guard = device_map.lock().unwrap();
                     let device_info = device_map_guard.map.get(&device_id);
@@ -689,10 +698,10 @@ fn find_sessions_for_pid(
     pid: u32,
     device_map: &Rc<Mutex<DeviceMap>>,
     system: &System,
-) -> Result<Vec<(String, String)>> {
+) -> Vec<(String, String)> {
     let device_map_guard = device_map.lock().unwrap();
     let proc_and_children = pid_and_child_pids(Pid::from_u32(pid), system);
-    Ok(device_map_guard
+    device_map_guard
         .map
         .values()
         .flat_map(|device| {
@@ -704,7 +713,7 @@ fn find_sessions_for_pid(
                 }
             })
         })
-        .collect())
+        .collect()
 }
 
 fn pid_and_child_pids(parent_pid: Pid, system: &System) -> HashSet<u32> {
@@ -729,11 +738,7 @@ fn pid_and_child_pids(parent_pid: Pid, system: &System) -> HashSet<u32> {
         }
         children.push(new_children);
     }
-    children
-        .into_iter()
-        .flatten()
-        .map(|pid| pid.as_u32())
-        .collect()
+    children.into_iter().flatten().map(Pid::as_u32).collect()
 }
 
 fn register_active_window_change() -> Result<HWINEVENTHOOK> {
@@ -764,8 +769,7 @@ fn register_active_window_change() -> Result<HWINEVENTHOOK> {
         // Grab current active window pid
         let foreground = unsafe { GetForegroundWindow() };
         let mut window_pid: u32 = 0;
-        let _ =
-            unsafe { GetWindowThreadProcessId(foreground, Some(ptr::addr_of_mut!(window_pid))) };
+        let _ = unsafe { GetWindowThreadProcessId(foreground, Some(&mut window_pid)) };
         EVENT_SENDER
             .get()
             .unwrap()
@@ -776,7 +780,7 @@ fn register_active_window_change() -> Result<HWINEVENTHOOK> {
         let mut msg = MSG::default();
         loop {
             unsafe {
-                let _ = GetMessageW(ptr::addr_of_mut!(msg), window.0, 0, 0);
+                let _ = GetMessageW(&mut msg, window.0, 0, 0);
             }
         }
     });

@@ -1,5 +1,3 @@
-use std::ptr;
-
 use windows::{
     core::{Result, HRESULT, PWSTR},
     Win32::{
@@ -26,8 +24,7 @@ pub static BAD_VALUE: i32 = 0x8000_1054_i32;
 pub fn get_device_name(device: &IMMDevice) -> Result<String> {
     unsafe {
         let property_store = device.OpenPropertyStore(STGM_READ)?;
-        let Ok(mut name_prop_variant) = property_store.GetValue(ptr::addr_of!(FRIENDLY_NAME))
-        else {
+        let Ok(mut name_prop_variant) = property_store.GetValue(&FRIENDLY_NAME) else {
             return Ok("Unknown".to_string());
         };
         let prop_variant_inner = &name_prop_variant.as_raw().Anonymous.Anonymous;

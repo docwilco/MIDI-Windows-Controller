@@ -2,10 +2,19 @@
 name = "midi-windows-controller"
 version = "0.1.0"
 edition = "2021"
-default-run = "events"
+default-run = "midi-windows-controller"
 
 [dependencies]
+derive_more = "0.99.17"
+dotenvy = "0.15.7"
+enum_dispatch = "0.3.13"
+env_logger = "0.11.3"
+log = "0.4.21"
+midir = "0.10.0"
+midly = "0.5.3"
 oneshot = "0.1.7"
+slotmap = "1.0.7"
+smallvec = { version = "1.13.2", features = ["union", "write"] }
 static_assertions = "1.1.0"
 strum = { version = "0.26.2", features = ["derive"] }
 sysinfo = "0.30.6"
