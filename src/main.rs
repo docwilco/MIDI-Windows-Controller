@@ -107,7 +107,7 @@ fn main() -> Result<()> {
     )?;
     debug!("Maps: {:?}", exact_midi_events);
     loop {
-        let bytes: MidiBytes = midi_input_rx.recv()?.into();
+        let bytes: MidiBytes = midi_input_rx.recv()?;
         debug!("Received midi event: {:?}", bytes);
         let triggers = exact_midi_events.get(&bytes);
         for trigger in triggers.into_iter().flatten() {

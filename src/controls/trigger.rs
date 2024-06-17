@@ -31,15 +31,17 @@ pub(crate) struct TriggerNoteOn {
 
 impl Trigger for TriggerNoteOn {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::NoteOn { key, vel } = message {
-                if self.channel == *channel && self.note == *key {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *vel == self.velocity,
-                        ValueMatchType::ThresholdOrAbove => *vel >= self.velocity,
-                        ValueMatchType::ThresholdOrBelow => *vel <= self.velocity,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::NoteOn { key, vel },
+        } = event
+        {
+            if self.channel == *channel && self.note == *key {
+                return match self.match_type {
+                    ValueMatchType::Exact => *vel == self.velocity,
+                    ValueMatchType::ThresholdOrAbove => *vel >= self.velocity,
+                    ValueMatchType::ThresholdOrBelow => *vel <= self.velocity,
+                };
             }
         }
         false
@@ -49,7 +51,7 @@ impl Trigger for TriggerNoteOn {
 impl Control for TriggerNoteOn {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerNoteOn: {:?}", event);
+            println!("TriggerNoteOn: {event:?}");
         }
     }
 
@@ -92,15 +94,17 @@ pub(crate) struct TriggerNoteOff {
 
 impl Trigger for TriggerNoteOff {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::NoteOff { key, vel } = message {
-                if self.channel == *channel && self.note == *key {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *vel == self.velocity,
-                        ValueMatchType::ThresholdOrAbove => *vel >= self.velocity,
-                        ValueMatchType::ThresholdOrBelow => *vel <= self.velocity,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::NoteOff { key, vel },
+        } = event
+        {
+            if self.channel == *channel && self.note == *key {
+                return match self.match_type {
+                    ValueMatchType::Exact => *vel == self.velocity,
+                    ValueMatchType::ThresholdOrAbove => *vel >= self.velocity,
+                    ValueMatchType::ThresholdOrBelow => *vel <= self.velocity,
+                };
             }
         }
         false
@@ -110,7 +114,7 @@ impl Trigger for TriggerNoteOff {
 impl Control for TriggerNoteOff {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerNoteOff: {:?}", event);
+            println!("TriggerNoteOff: {event:?}");
         }
     }
 
@@ -153,15 +157,17 @@ pub(crate) struct TriggerAftertouch {
 
 impl Trigger for TriggerAftertouch {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::Aftertouch { key, vel } = message {
-                if self.channel == *channel && self.note == *key {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *vel == self.pressure,
-                        ValueMatchType::ThresholdOrAbove => *vel >= self.pressure,
-                        ValueMatchType::ThresholdOrBelow => *vel <= self.pressure,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::Aftertouch { key, vel },
+        } = event
+        {
+            if self.channel == *channel && self.note == *key {
+                return match self.match_type {
+                    ValueMatchType::Exact => *vel == self.pressure,
+                    ValueMatchType::ThresholdOrAbove => *vel >= self.pressure,
+                    ValueMatchType::ThresholdOrBelow => *vel <= self.pressure,
+                };
             }
         }
         false
@@ -171,7 +177,7 @@ impl Trigger for TriggerAftertouch {
 impl Control for TriggerAftertouch {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerAftertouch: {:?}", event);
+            println!("TriggerAftertouch: {event:?}");
         }
     }
 
@@ -214,15 +220,17 @@ pub(crate) struct TriggerController {
 
 impl Trigger for TriggerController {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::Controller { controller, value } = message {
-                if self.channel == *channel && self.controller == *controller {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *value == self.value,
-                        ValueMatchType::ThresholdOrAbove => *value >= self.value,
-                        ValueMatchType::ThresholdOrBelow => *value <= self.value,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::Controller { controller, value },
+        } = event
+        {
+            if self.channel == *channel && self.controller == *controller {
+                return match self.match_type {
+                    ValueMatchType::Exact => *value == self.value,
+                    ValueMatchType::ThresholdOrAbove => *value >= self.value,
+                    ValueMatchType::ThresholdOrBelow => *value <= self.value,
+                };
             }
         }
         false
@@ -232,7 +240,7 @@ impl Trigger for TriggerController {
 impl Control for TriggerController {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerController: {:?}", event);
+            println!("TriggerController: {event:?}");
         }
     }
 
@@ -274,15 +282,17 @@ pub(crate) struct TriggerProgramChange {
 
 impl Trigger for TriggerProgramChange {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::ProgramChange { program } = message {
-                if self.channel == *channel {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *program == self.program,
-                        ValueMatchType::ThresholdOrAbove => *program >= self.program,
-                        ValueMatchType::ThresholdOrBelow => *program <= self.program,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::ProgramChange { program },
+        } = event
+        {
+            if self.channel == *channel {
+                return match self.match_type {
+                    ValueMatchType::Exact => *program == self.program,
+                    ValueMatchType::ThresholdOrAbove => *program >= self.program,
+                    ValueMatchType::ThresholdOrBelow => *program <= self.program,
+                };
             }
         }
         false
@@ -292,7 +302,7 @@ impl Trigger for TriggerProgramChange {
 impl Control for TriggerProgramChange {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerProgramChange: {:?}", event);
+            println!("TriggerProgramChange: {event:?}");
         }
     }
 
@@ -332,15 +342,17 @@ pub(crate) struct TriggerChannelAftertouch {
 
 impl Trigger for TriggerChannelAftertouch {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::ChannelAftertouch { vel } = message {
-                if self.channel == *channel {
-                    return match self.match_type {
-                        ValueMatchType::Exact => *vel == self.pressure,
-                        ValueMatchType::ThresholdOrAbove => *vel >= self.pressure,
-                        ValueMatchType::ThresholdOrBelow => *vel <= self.pressure,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::ChannelAftertouch { vel },
+        } = event
+        {
+            if self.channel == *channel {
+                return match self.match_type {
+                    ValueMatchType::Exact => *vel == self.pressure,
+                    ValueMatchType::ThresholdOrAbove => *vel >= self.pressure,
+                    ValueMatchType::ThresholdOrBelow => *vel <= self.pressure,
+                };
             }
         }
         false
@@ -350,7 +362,7 @@ impl Trigger for TriggerChannelAftertouch {
 impl Control for TriggerChannelAftertouch {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerChannelAftertouch: {:?}", event);
+            println!("TriggerChannelAftertouch: {event:?}");
         }
     }
 
@@ -386,15 +398,17 @@ pub(crate) struct TriggerPitchBend {
 
 impl Trigger for TriggerPitchBend {
     fn is_triggered_by(&self, event: &LiveEvent) -> bool {
-        if let LiveEvent::Midi { channel, message } = event {
-            if let MidiMessage::PitchBend { bend } = message {
-                if self.channel == *channel {
-                    return match self.match_type {
-                        ValueMatchType::Exact => bend.as_int() == self.value,
-                        ValueMatchType::ThresholdOrAbove => bend.as_int() >= self.value,
-                        ValueMatchType::ThresholdOrBelow => bend.as_int() <= self.value,
-                    };
-                }
+        if let LiveEvent::Midi {
+            channel,
+            message: MidiMessage::PitchBend { bend },
+        } = event
+        {
+            if self.channel == *channel {
+                return match self.match_type {
+                    ValueMatchType::Exact => bend.as_int() == self.value,
+                    ValueMatchType::ThresholdOrAbove => bend.as_int() >= self.value,
+                    ValueMatchType::ThresholdOrBelow => bend.as_int() <= self.value,
+                };
             }
         }
         false
@@ -404,7 +418,7 @@ impl Trigger for TriggerPitchBend {
 impl Control for TriggerPitchBend {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerPitchBend: {:?}", event);
+            println!("TriggerPitchBend: {event:?}");
         }
     }
 
@@ -460,7 +474,7 @@ impl Trigger for TriggerMtcQuarterFrame {
 impl Control for TriggerMtcQuarterFrame {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerMtcQuarterFrame: {:?}", event);
+            println!("TriggerMtcQuarterFrame: {event:?}");
         }
     }
 
@@ -509,7 +523,7 @@ impl Trigger for TriggerSongPosition {
 impl Control for TriggerSongPosition {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerSongPosition: {:?}", event);
+            println!("TriggerSongPosition: {event:?}");
         }
     }
 
@@ -552,7 +566,7 @@ impl Trigger for TriggerSongSelect {
 impl Control for TriggerSongSelect {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerSongSelect: {:?}", event);
+            println!("TriggerSongSelect: {event:?}");
         }
     }
 
@@ -585,7 +599,7 @@ impl Trigger for TriggerTuneRequest {
 impl Control for TriggerTuneRequest {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerTuneRequest: {:?}", event);
+            println!("TriggerTuneRequest: {event:?}");
         }
     }
 
@@ -610,7 +624,7 @@ impl Trigger for TriggerTimingClock {
 impl Control for TriggerTimingClock {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerTimingClock: {:?}", event);
+            println!("TriggerTimingClock: {event:?}");
         }
     }
 
@@ -635,7 +649,7 @@ impl Trigger for TriggerStart {
 impl Control for TriggerStart {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerStart: {:?}", event);
+            println!("TriggerStart: {event:?}");
         }
     }
 
@@ -660,7 +674,7 @@ impl Trigger for TriggerContinue {
 impl Control for TriggerContinue {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerContinue: {:?}", event);
+            println!("TriggerContinue: {event:?}");
         }
     }
 
@@ -685,7 +699,7 @@ impl Trigger for TriggerStop {
 impl Control for TriggerStop {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerStop: {:?}", event);
+            println!("TriggerStop: {event:?}");
         }
     }
 
@@ -710,7 +724,7 @@ impl Trigger for TriggerActiveSensing {
 impl Control for TriggerActiveSensing {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerActiveSensing: {:?}", event);
+            println!("TriggerActiveSensing: {event:?}");
         }
     }
 
@@ -735,7 +749,7 @@ impl Trigger for TriggerReset {
 impl Control for TriggerReset {
     fn handle_midi_event_inner(&self, event: &LiveEvent) {
         if self.is_triggered_by(event) {
-            println!("TriggerReset: {:?}", event);
+            println!("TriggerReset: {event:?}");
         }
     }
 
@@ -782,17 +796,17 @@ pub(crate) fn live_event_without_value(event: &[u8]) -> MidiBytes {
         } => match message {
             MidiMessage::NoteOn {
                 key: _,
-                ref mut vel,
-            } => *vel = u7::default(),
-            MidiMessage::NoteOff {
+                vel: ref mut value,
+            }
+            | MidiMessage::NoteOff {
                 key: _,
-                ref mut vel,
-            } => *vel = u7::default(),
-            MidiMessage::Aftertouch {
+                vel: ref mut value,
+            }
+            | MidiMessage::Aftertouch {
                 key: _,
-                ref mut vel,
-            } => *vel = u7::default(),
-            MidiMessage::Controller {
+                vel: ref mut value,
+            }
+            | MidiMessage::Controller {
                 controller: _,
                 ref mut value,
             } => *value = u7::default(),

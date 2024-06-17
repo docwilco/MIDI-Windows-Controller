@@ -4,8 +4,12 @@ use midly::live::LiveEvent;
 use trigger::TriggerMidiMessage;
 
 pub(crate) mod trigger;
-use trigger::*;
-
+use trigger::{
+    TriggerActiveSensing, TriggerAftertouch, TriggerChannelAftertouch, TriggerContinue,
+    TriggerController, TriggerMtcQuarterFrame, TriggerNoteOff, TriggerNoteOn, TriggerPitchBend,
+    TriggerProgramChange, TriggerReset, TriggerSongPosition, TriggerSongSelect, TriggerStart,
+    TriggerStop, TriggerTimingClock, TriggerTuneRequest,
+};
 pub(crate) mod indicator;
 
 //enum Direction {
@@ -20,14 +24,14 @@ pub(crate) trait Control {
     fn exact_hash_key_inner(&self) -> Option<LiveEvent>;
 
     fn handle_midi_event(&self, message: &[u8]) {
-        let event = LiveEvent::parse(&message).unwrap();
+        let event = LiveEvent::parse(message).unwrap();
         self.handle_midi_event_inner(&event);
     }
     fn threshold_hash_key(&self) -> Option<MidiBytes> {
-        self.threshold_hash_key_inner().map(|event| event.into())
+        self.threshold_hash_key_inner().map(Into::into)
     }
     fn exact_hash_key(&self) -> Option<MidiBytes> {
-        self.exact_hash_key_inner().map(|event| event.into())
+        self.exact_hash_key_inner().map(Into::into)
     }
 }
 
